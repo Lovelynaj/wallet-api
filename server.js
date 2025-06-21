@@ -3,10 +3,14 @@ import dotenv from "dotenv";
 import { initDB } from "./config/db.js";
 import transactionsRoute from "./routes/transactionsRoute.js";
 import rateLimiter from "./middleware/rateLimiter.js";
+import job from "./config/cron.js";
 
 dotenv.config();
 
 const app = express();
+
+//We will only run this cron when we are in production state
+if (process.env.NODE_ENV === "production") job.start();
 
 //middleware : is a function that runs in the middle i.e between the request and the response;
 //They help in authentication checks, or anything before req or res.
@@ -21,6 +25,11 @@ app.use(express.json());
 // });
 
 const PORT = process.env.PORT || 5001;
+
+//Route to check the status of our API
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 //This just to check if your API is working
 app.get("/", (req, res) => {
